@@ -234,6 +234,86 @@
         return to
     }
 
+    //var cloneObj = JSON.parse(JSON.stringify(obj)); 深拷贝
+    // 直接使用var newObj = Object.create(oldObj)，可以达到深拷贝的效果
+    function deepClone(initalObj, finalObj) {
+        var obj = finalObj || {};
+        for (var i in initalObj) {
+            var prop = initalObj[i];        // 避免相互引用对象导致死循环，如initalObj.a = initalObj的情况
+            if(prop === obj) {
+                continue;
+            }
+            if (typeof prop === 'object') {
+                obj[i] = (prop.constructor === Array) ? [] : {};
+                arguments.callee(prop, obj[i]);
+            } else {
+                obj[i] = prop;
+            }
+        }
+        return obj;
+    }
+    var str = {};
+    var obj = { a: {a: "hello", b: 21} };
+    deepClone(obj, str);
+    //str.a {a: "hello", b: 21}
+
+    /* Method of Boolean, Number, String*/
+    Boolean.prototype.clone = function() { return this.valueOf(); };
+    Number.prototype.clone = function() { return this.valueOf(); };
+    String.prototype.clone = function() { return this.valueOf(); };
+
+   //关于更多拷贝 https://segmentfault.com/a/1190000000501320
+
+
+    /**
+     * Perform no operation. 不执行操作。noop?
+     * Stubbing args to make Flow happy without leaving useless transpiled code
+     * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/)
+     */
+    function noop (a, b, c) {}
+
+    /**
+     * Always return false.
+     */
+    var no = function (a, b, c) { return false; };
+
+    /**
+     * Return same value
+     */
+    var identity = function (_) { return _; };
+
+
+    /**
+     * Generate a static keys string from compiler modules.
+     */
+    function genStaticKeys (modules) {
+        return modules.reduce(function (keys, m) {
+            console.log(m.staticKeys)
+            return keys.concat(m.staticKeys || [])
+        }, []).join(',')
+    }
+
+    var klass$11 = {
+        staticKeys: ['staticClass']
+    };
+
+    var style$11 = {
+        staticKeys: ['staticStyle']
+    };
+
+    var model$21 = {
+        preTransformNode: {}
+    };
+
+    var modules$1 = [
+        klass$11,
+        style$11,
+        model$21
+    ];
+
+    console.log(genStaticKeys(modules$1))
+
+   
 
 
 </script>
