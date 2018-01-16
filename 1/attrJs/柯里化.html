@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>函数柯里化</title>
+</head>
+<body>
+<script>
+    function square(i) {
+        return i * i;
+    }
+
+    function dubble(i) {
+        return i *= 2;
+    }
+
+    function map(handeler, list) {
+        return list.map(handeler);
+    }
+
+    // 数组的每一项平方
+    map(square, [1, 2, 3, 4, 5]);
+    map(square, [6, 7, 8, 9, 10]);
+    map(square, [10, 20, 30, 40, 50]);
+    // ......
+
+    // 数组的每一项加倍
+    map(dubble, [1, 2, 3, 4, 5]);
+    map(dubble, [6, 7, 8, 9, 10]);
+    map(dubble, [10, 20, 30, 40, 50]);
+
+    //柯里化改造一下：
+    Array.prototype.slice1 = function(start,end){
+              var result = new Array();
+              start = start || 0;
+              end = end || this.length; //this指向调用的对象，当用了call后，能够改变this的指向，也就是指向传进来的对象，这是关键
+              for(var i = start; i < end; i++){
+                       result.push(this[i]); // result[i] = this[i]
+              }
+              console.log(end)
+              return result;
+    }
+
+    function currying(fn) {
+        var slice = Array.prototype.slice1,
+                  __args = slice.call(arguments,1);//从arguments【map, square】  把截取square赋值给__args
+        return (function () {
+            var __inargs = slice.call(arguments); //mapSQ([1, 2, 3, 4, 5]) arguments  [1, 2, 3, 4, 5]
+            return fn.apply(null, __args.concat(__inargs)); //拼接参数到map中 map(square, [1, 2, 3, 4, 5]);
+        });
+    }
+
+    var mapSQ = currying(map, square);
+    mapSQ([1, 2, 3, 4, 5]); //[1, 4, 9, 16, 25]
+    mapSQ([1, 2, 3, 4, 5]);
+    mapSQ([6, 7, 8, 9, 10]);
+
+    var mapDB = currying(map, dubble);
+    mapDB([1, 2, 3, 4, 5]);
+    mapDB([6, 7, 8, 9, 10]);
+    mapDB([10, 20, 30, 40, 50]);
+
+
+    // map forEach  of  in循环 Object.keys(obj)
+    var arr =  [1, 2, 3, 4, 5]
+    //map() 方法返回一个由原数组中的每个元素调用一个指定方法后的返回值组成的新数组。
+    //函数参数
+    // val 必须 当前元素key值 1 ,2,3,4,5
+    // val1 可选 当前元素的索引值 0,1,2,3,4
+    // arr 可选 当前元素属于的数组对象 [1, 2, 3, 4, 5]
+    var newArr = arr.map(function(val,val1,val2){
+        return val*val
+    })
+    //newArr [1, 4, 9, 16, 25]
+
+    //forEach 函数参数 同map
+    var newArr1 = arr.forEach(function(val,val1,val2){
+    })
+    //newArr1 undefiend
+
+    // for of
+    for(var key of arr){}
+    // for in
+    for(var keys in arr){}
+
+
+    //Array.prototype扩展可以让IE6-IE8浏览器也支持map方法：
+    if (typeof Array.prototype.map1 != "function") {
+        Array.prototype.map1 = function (fn, context) {
+            var arr = [];
+            if (typeof fn === "function") {
+                // context {x: 1}
+                for (var k = 0, length = this.length; k < length; k++) {
+                    arr.push(fn.call(context, this[k], k, this));
+                    //call 调用fn并改变其内部的this指向，指向context  其后依次传入参数
+                    // apply 参数为一个数组
+                    // call apply 也可以继承方法
+                }
+            }
+            return arr;
+        };
+    }
+
+    function abc (a) {
+        this.a = 1
+    }
+    function bcd () {
+        this.b = 2
+        abc.call(this)
+        //继承abc的属性
+    }
+    var Bcd = new bcd()
+    abc.a = function(){}
+    abc.a.call(bcd)
+    // bcd继承abc的方法
+
+
+    var obj = {x:1}
+    var newArr = arr.map1(function (val) {
+        // 传 obj  this.x    1
+        // 不传obj this   window
+        return val
+    },obj)
+    //newArr [1, 2, 3, 4, 5]
+
+</script>
+</body>
+</html>

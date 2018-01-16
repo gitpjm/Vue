@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    class A {
+        constructor() {
+            this.x = 1;
+        }
+        print() {
+            console.log(this.x);
+        }
+    }
+
+    class B extends A {
+        constructor() {
+            super();
+            this.x = 2;
+        }
+        m() {
+            super.print();
+        }
+    }
+
+    let b = new B();
+    let a = new A();
+    b.m() // 2
+    a.print()
+    console.log(b.__proto__)
+    console.log(a)
+
+
+    function myA () {
+        this.x = 1
+        this.y = 2
+    }
+    function myB () {
+        this.x = 2
+        myA.prototype.constructor.call(this) //继承属性 不会重写属性 会保留自己的并继承
+    }
+    myA.prototype = {
+        constructor:myA,
+        name:function(name){
+            console.log(name)
+        }
+    }
+    var MyA = new myA()
+    var MyB= new myB()
+    myB.__proto__ = myA // 构造函数继承
+    myB.prototype.__proto__ = myA.prototype // 方法继承
+    console.log(MyB)
+    MyB.name("123")
+</script>
+</body>
+</html>

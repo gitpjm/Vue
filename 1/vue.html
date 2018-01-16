@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="box">
+
+</div>
+<script src="Vue.js"></script>
+<script>
+    new Vue({
+        "el":"#box",
+        data: function () {
+            return {
+                msg:"a"
+            }
+        }
+    })
+    function a () {
+    }
+    function b () {
+    }
+    b(a())
+
+    {
+        a()
+
+    }
+    {
+        var c = 1;
+        function Vue$3() {
+        }
+        function  a() {
+            return Vue$3
+        }
+        Vue$3.name1 = "123"
+    }
+   new a()
+    function isObject (obj) {
+        return obj !== null && typeof obj === 'object'
+    }
+    var _toString = Object.prototype.toString;
+
+    function toRawType (value) {
+        return _toString.call(value).slice(8,-1)
+    }
+    ////slice() -1表示最后一个元素 返回一个新的数组，包含从 start 到 end （不包括该元素）的 arrayObject 中的元素。
+    function isValidArrayIndex (val) {
+        var n = parseFloat(String(val));
+        return n >= 0 && Math.floor(n) === n && isFinite(val)
+    }
+
+    JSON.stringify({name:"123",hobby:{ball:"qiulei"}}, null, 2)
+
+    //  JSON.stringify  第2个参数 如果该参数是一个函数，则在序列化过程中，被序列化的值的每个属性都会经过该函数的转换和处理；如果该参数是一个数组，
+    // 则只有包含在这个数组中的属性名才会被序列化到最终的 JSON 字符串中；如果该参数为null或者未提供，则对象所有的属性都会被序列化；
+    //  JSON.stringify  第3个参数  指定缩进用的空白字符串，用于美化输出（pretty-print）；
+
+    //console.log(JSON.stringify({name:"123",hobby:{ball:"qiulei"}}, null, 2))
+    // console.log()
+
+    function toNumber (val) {
+        var n = parseFloat(val);
+        return isNaN(n) ? val : n
+    }
+
+    /**
+     * Make a map and return a function for checking if a key 绘制一个地图并返回一个函数检查key是否在内置属性里
+     Make a map and return a function for checking if a key
+     * is in that map.
+     */
+    function makeMap (
+            str,
+            expectsLowerCase
+    ) {
+        var map = Object.create(null);
+        var list = str.split(',');
+        for (var i = 0; i < list.length; i++) {
+            map[list[i]] = true;
+        }
+        return expectsLowerCase
+                ? function (val) { return map[val.toLowerCase()]; }
+                : function (val) { return map[val]; }
+    }
+
+    var isBuiltInTag = makeMap('slot,component', true)("component");
+
+    var isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')("slot");
+
+    /**
+     * Remove an item from an array
+     */
+    function remove (arr, item) {
+        if (arr.length) {
+            var index = arr.indexOf(item);
+            if (index > -1) {
+                //index 开始删除的下标   1 代表删除的个数
+                // 1个参数 index默认从0开始
+                // 如果三个参数 中间的代表删除的个数 最后一个是插入的元素
+                return arr.splice(index, 1)
+            }
+        }
+    }
+    var arr = ["1","2","3","5"]
+    remove(arr,"2")
+   // arr ["1","3","5"]
+
+    /*  缓存原型方法, 避免每次去对象的原型找这个hasOwnProperty方法, 减少一丁点性能损耗*/
+
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    //在这里，只有 hasOwnProperty 能给出正确答案，这在遍历一个对象的属性时是非常必要的。Javascript 中没有其他方法能判断一个属性是定义在对象本身还是继承自原型链。
+    //当我们使用 for in loop 来遍历对象时，使用 hasOwnProperty 将会很好地避免来自原型对象扩展所带来的困扰。
+    function hasOwn (obj, key) {
+        return hasOwnProperty.call(obj, key)
+    }
+
+    /**
+     * Create a cached version of a pure function. 创建纯函数的缓存版本。
+     利用闭包缓存一个函数执行特定参数的结果, 柯里化, 比如
+     执行 var cFn1 = cached( fn1 ); cFn1(2); 第二次调用 cFn1(2)的时候, 就可以利用第一次的结果,
+     适合会多次调用一个函数, 而且参数有可能重复的情况
+     由于是利用了缓存, 所以传入的函数应该是纯函数, 就是每次如果参数一样, 结果必须一样, 不能是random这样的函数
+     */
+    function cached (fn) {
+        var cache = Object.create(null);
+        return (function cachedFn (str) {
+            var hit = cache[str];
+            //多次调用 缓存结果到hit中
+            return hit || (cache[str] = fn(str))
+        })
+    }
+
+    var camelizeRE = /-(\w)/g; //\w数字 字母 下划线
+
+    var camelize = cached(function (str) {
+        return str.replace(camelizeRE, function (_, c) {return c ? c.toUpperCase() : ''; })
+    });
+
+    // str.replace(reg,function(a,b,c,d){})
+
+    //　第一个参数：正则所匹配到的字符；
+
+    //第二个参数：捕获括号所捕获到的字符；
+
+    //第三个参数：正则匹配到的每段字符的第一个字符的索引；
+
+    //第四个参数：用于匹配的字符串主体；
+
+    //camelize("abc-dkf")  //abcDkd
+    //camelize("abc-dkf")
+    var capitalize = cached(function (str) {
+        return str.charAt(0).toUpperCase() + str.slice(1)
+    });
+
+    //var str="www.runoob.com!";
+    //返回一个新的数组，包含从 start 到 end （不包括该元素）的 arrayObject 中的元素。
+    //document.write(str.slice(4)+"<br>"); // 从第 5 个字符开始截取到末尾
+    //document.write(str.slice(4,10)); // 从第 5 个字符开始截取到第10个字符
+
+
+    /**
+     * Hyphenate a camelCase string.
+     */
+    var hyphenateRE = /\B([A-Z])/g;
+    var hyphenate = cached(function (str) {
+        return str.replace(hyphenateRE, '-$1').toLowerCase() // ? '-$1'
+    });
+    hyphenate("afAjkDdddDdfs") //af-ajk-dddd-ddfs
+
+    /**
+     * Simple bind, faster than native  // 关于bind https://segmentfault.com/a/1190000002662251
+     */
+    function bind (fn, ctx) {
+        function boundFn (a) {
+            var l = arguments.length;
+            console.log(arguments)   //arguments.callee  = boundFn 它可以用来递归匿名函数。
+            return l
+                    ? l > 1 //如果实参数量大于1
+                    ? fn.apply(ctx, arguments)
+                    : fn.call(ctx, a) //如果实参数量等于1
+                    : fn.call(ctx) //l 不存在 无实参
+        }
+//        var num = 5
+//        num ? num > 10 ? num = 8 : num =  0 : num = 9
+
+        // record original fn length 记录原始的形参数量
+        boundFn._length = fn.length;
+        return boundFn
+    }
+
+    this.num = 9;
+    var mymodule = {
+        num: 81,
+        getNum: function() { return this.num; }
+    };
+
+    mymodule.getNum(); // 81
+
+    var getNum = mymodule.getNum;
+    getNum(); // 9, 因为在这个例子中，"this"指向全局对象
+
+    // 创建一个'this'绑定到module的函数
+    var boundGetNum = getNum.bind(mymodule);
+    //boundGetNum() // 81
+
+    var boundGetNum1 = bind(getNum,mymodule)(this.num)
+
+    //boundGetNum1  81
+
+
+    /**
+     * Convert an Array-like object to a real Array. 将伪数组转化伪数组
+     */
+    function toArray (list, start) {
+        start = start || 0;
+        var i = list.length - start;
+        var ret = new Array(i);
+        while (i--) {    //0 == false
+            ret[i] = list[i + start];
+        }
+        return ret
+    }
+
+    /**
+     * Mix properties into target object. 属性混和  相当于浅拷贝
+     */
+
+    function extend (to, _from) {
+        for (var key in _from) {
+            to[key] = _from[key];
+        }
+        return to
+    }
+
+
+
+</script>
+</body>
+</html>
