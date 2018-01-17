@@ -37,7 +37,8 @@
         }
         Vue$3.name1 = "123"
     }
-   new a()
+    new a()
+
     function isObject (obj) {
         return obj !== null && typeof obj === 'object'
     }
@@ -105,7 +106,7 @@
     }
     var arr = ["1","2","3","5"]
     remove(arr,"2")
-   // arr ["1","3","5"]
+    // arr ["1","3","5"]
 
     /*  缓存原型方法, 避免每次去对象的原型找这个hasOwnProperty方法, 减少一丁点性能损耗*/
 
@@ -262,7 +263,7 @@
     Number.prototype.clone = function() { return this.valueOf(); };
     String.prototype.clone = function() { return this.valueOf(); };
 
-   //关于更多拷贝 https://segmentfault.com/a/1190000000501320
+    //关于更多拷贝 https://segmentfault.com/a/1190000000501320
 
 
     /**
@@ -286,7 +287,6 @@
     /**
      * Generate a static keys string from compiler modules.
      */
-
     function genStaticKeys (modules) {
         return modules.reduce(function (keys, m) {
             console.log(m.staticKeys)
@@ -313,6 +313,126 @@
     ];
 
     console.log(genStaticKeys(modules$1))
+
+    /**
+     * Check if two values are loosely equal - that is,
+     * if they are plain objects, do they have the same shape?
+     * 检查两个值是否松散相等，也就是说，如果它们是普通对象，它们是否具有相同的结构？
+     */
+    function looseEqual (a, b) {
+        if (a === b) { return true }
+        var isObjectA = isObject(a);
+        var isObjectB = isObject(b);
+        if (isObjectA && isObjectB) {
+            try {
+                var isArrayA = Array.isArray(a);
+                var isArrayB = Array.isArray(b);
+                if (isArrayA && isArrayB) {
+                    return a.length === b.length && a.every(function (e, i) {
+                                return looseEqual(e, b[i])
+                            })
+                    //对数组中的每个元素都执行一次指定的函数（callback），直到此函数返回 false，
+                    // 如果发现这个元素，every 将返回 false，如果回调函数对每个元素执行后都返回 true ，every 将返回 true。
+                    // 它只对数组中的非空元素执行指定的函数，没有赋值或者已经删除的元素将被忽略
+                } else if (!isArrayA && !isArrayB) {
+                    var keysA = Object.keys(a);
+                    var keysB = Object.keys(b);
+                    return keysA.length === keysB.length && keysA.every(function (key) {
+                                return looseEqual(a[key], b[key])
+                            })
+                } else {
+                    /* istanbul ignore next */
+                    return false
+                }
+            } catch (e) {
+                /* istanbul ignore next */
+                return false
+            }
+        } else if (!isObjectA && !isObjectB) {
+            return String(a) === String(b)
+        } else {
+            return false
+        }
+    }
+    //looseEqual(["1,2"],["1,2"])  true
+    //looseEqual(["1,2"],["1,3"])  false
+
+    function getSelf(n){
+        if(n==1){
+            return false
+        }
+        return getSelf(n-1)
+    } console.log(getSelf(3));
+    //递归是可以利用闭包缓存参数，直道满足外部表达式时return 结束递归
+
+    //问题描述：给两个数，如果两个数相等，最大公约数是其本身。
+    // 如果不等，取两个数相减的绝对值和两个数中最小的数比较，相等则为最大公约，不等则继续上面的算法，直到相等。
+    var getNum = function (num,num1) {
+        if(num === num1) { return num}
+        return arguments.callee(Math.abs(num-num1),Math.min(num,num1))  //Math.min.apply(null,mArr) 取数组最小值
+    }
+    // 关于更多递归https://www.cnblogs.com/YikaJ/p/4263873.html
+    var mArr = [1,2,3,4,5,6,7]
+    // mArr.splice(Math.random(2.5),1)   1  数组的第一个
+
+
+    // 查找val是否是数组中的直 并返回相应的下标
+    function looseIndexOf (arr, val) {
+        for (var i = 0; i < arr.length; i++) {
+            if (looseEqual(arr[i], val)) { return i }
+        }
+        return -1
+    }
+    /**
+     * Ensure a function is called only once.
+     */
+    function once (fn) {
+        var called = false;
+        return function () {
+            if (!called) {
+                called = true;
+                fn.apply(this, arguments);
+            }
+        }
+    }
+
+    var abcd = once(function a(){console.log(arguments)})
+    //abcd(1); 改变called的值  执行了once的回调函数  全局调用this指向window  传递参数argumens
+    // 返回Arguments [1, callee: ƒ, Symbol(Symbol.iterator): ƒ]
+    //abcd(2)  没有执行 因为此时called为true  利用闭包缓存上一次的结果
+
+
+    //定义Vue属性
+
+    var SSR_ATTR = 'data-server-rendered';
+
+    var ASSET_TYPES = [
+        'component',
+        'directive',
+        'filter'
+    ];
+
+    var LIFECYCLE_HOOKS = [
+        'beforeCreate',
+        'created',
+        'beforeMount',
+        'mounted',
+        'beforeUpdate',
+        'updated',
+        'beforeDestroy',
+        'destroyed',
+        'activated',
+        'deactivated',
+        'errorCaptured'
+    ];
+
+    //console.log(j())// j is not a function
+
+    {  // 花括号  的作用是形成局部作用域  推测（）作用也是如此
+        var j = function (){};
+        var o = ({name:"123",a:function(){}})
+    }
+
 
 
 
