@@ -8,59 +8,116 @@
 <div id="box">
 
 </div>
+<div>
+    <p>hello，<input id='nickName'></p>
+    <div id="introduce"></div>
+</div>　　　　
 <script src="Vue.js"></script>
 <script>
     new Vue({
         "el":"#box",
         data: function () {
             return {
-                msg:"a"
+                mssage:"a"
             }
         }
-    })
-    function a () {
-    }
-    function b () {
-    }
-    b(a())
+    });
 
+    function a(){}
     {
-        a()
-
+        a();  //不会执行{} 里面的函数a
     }
+
     {
         var c = 1;
-        function Vue$3() {
-        }
-        function  a() {
-            return Vue$3
-        }
+        function Vue$3() {}
+        function  a() { return Vue$3 }
+        //"new 执行的a"
         Vue$3.name1 = "123"
     }
-    new a()
+
+    new a();
+
+    /**
+     * Check if value is primitive 检查是否是原始值
+     */
+    function isPrimitive (value) {
+        return (
+                typeof value === 'string' ||
+                typeof value === 'number' ||
+                // $flow-disable-line
+                typeof value === 'symbol' ||
+                typeof value === 'boolean'
+        )
+    }
 
     function isObject (obj) {
         return obj !== null && typeof obj === 'object'
     }
-    var _toString = Object.prototype.toString;
+
+    var _toString = Object.prototype.toString; //通过Object.prototype.toString.call()方法，判断某个对象值属于哪种内置类型。
 
     function toRawType (value) {
         return _toString.call(value).slice(8,-1)
     }
+
+     Array.prototype.slice = function(start,end){
+         var result = new Array();
+         start = start || 0;
+         end = end || this.length; //this指向调用的对象，当用了call后，能够改变this的指向，也就是指向传进来的对象
+        for(var i = start; i < end; i++){
+                  result.push(this[i]);
+             }
+        return result
+     }
+    // toRawType(arr) 处理之前[Object Object]  call之后 '[object Array]';    slice处理之后Array
     ////slice() -1表示最后一个元素 返回一个新的数组，包含从 start 到 end （不包括该元素）的 arrayObject 中的元素。
+
+    //将一个类数组对象转换为真正的数组
+    var ad = {'0':'a', '1':'b', '2':'c', length:3};
+    function list() {
+        return Array.prototype.slice.call(arguments); // arguments 是一个伪数组
+    }
+    var unboundSlice = Array.prototype.slice;
+    var slice = Function.prototype.call.bind(unboundSlice); //先绑定
+    //slice(ad)  ["a", "b", "c"]
+    //Function.prototype.call(ad).bind(unboundSlice)
+    //call 执行slice前函数原型已经绑定了Array.prototype.slice  在执行slice函数 并把其内部的this指向ad
+    // 等价于Array.prototype.slice.call(arguments)
+
+    /**
+     * Strict object type check. Only returns true
+     * for plain JavaScript objects.
+     */
+    function isPlainObject (obj) {
+        return _toString.call(obj) === '[object Object]'
+    }
+
+    function isRegExp (v) {
+        return _toString.call(v) === '[object RegExp]'
+    }
+
     function isValidArrayIndex (val) {
         var n = parseFloat(String(val));
         return n >= 0 && Math.floor(n) === n && isFinite(val)
     }
 
-    JSON.stringify({name:"123",hobby:{ball:"qiulei"}}, null, 2)
+    /**
+     * Convert a value to a string that is actually rendered. 将值转换为实际呈现的字符串。
+     */
+    function toString (val) {
+        return val == null
+                ? ''
+                : typeof val === 'object'
+                ? JSON.stringify(val, null, 2)
+                : String(val)
+    }
 
+    JSON.stringify({name:"123",hobby:{ball:"qiulei"}}, null, 2)
     //  JSON.stringify  第2个参数 如果该参数是一个函数，则在序列化过程中，被序列化的值的每个属性都会经过该函数的转换和处理；如果该参数是一个数组，
     // 则只有包含在这个数组中的属性名才会被序列化到最终的 JSON 字符串中；如果该参数为null或者未提供，则对象所有的属性都会被序列化；
     //  JSON.stringify  第3个参数  指定缩进用的空白字符串，用于美化输出（pretty-print）；
-
     //console.log(JSON.stringify({name:"123",hobby:{ball:"qiulei"}}, null, 2))
-    // console.log()
 
     function toNumber (val) {
         var n = parseFloat(val);
@@ -85,10 +142,17 @@
                 ? function (val) { return map[val.toLowerCase()]; }
                 : function (val) { return map[val]; }
     }
+    /**
+     * Check if a tag is a built-in tag. 检查标签是否为内置标签。如果是返回true 否返回undefined
+     */
+    var isBuiltInTag = makeMap('slot,component', true)("component1");
+    //isBuiltInTag  true
 
-    var isBuiltInTag = makeMap('slot,component', true)("component");
-
+    /**
+     * Check if a attribute is a reserved attribute. 检查属性是否为保留属性。 is a reserved attribute and cannot be used as component prop.
+     */
     var isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')("slot");
+    //isReservedAttribute true
 
     /**
      * Remove an item from an array
@@ -97,16 +161,16 @@
         if (arr.length) {
             var index = arr.indexOf(item);
             if (index > -1) {
+                return arr.splice(index, 1)
                 //index 开始删除的下标   1 代表删除的个数
                 // 1个参数 index默认从0开始
                 // 如果三个参数 中间的代表删除的个数 最后一个是插入的元素
-                return arr.splice(index, 1)
             }
         }
     }
     var arr = ["1","2","3","5"]
     remove(arr,"2")
-    // arr ["1","3","5"]
+    //arr ["1","3","5"]
 
     /*  缓存原型方法, 避免每次去对象的原型找这个hasOwnProperty方法, 减少一丁点性能损耗*/
 
@@ -116,6 +180,14 @@
     function hasOwn (obj, key) {
         return hasOwnProperty.call(obj, key)
     }
+    function As(){
+        this.name = "fjals"
+    }
+    var as = new As()
+    As.prototype.n = {n:'123'}
+//    console.log(hasOwn(as,"n")) false
+//    console.log("n" in as )  true
+//    console.log(as.hasOwnProperty("name"))  true  普通写法  每次去hasOwnProperty原型中查找
 
     /**
      * Create a cached version of a pure function. 创建纯函数的缓存版本。
@@ -141,7 +213,7 @@
 
     // str.replace(reg,function(a,b,c,d){})
 
-    //　第一个参数：正则所匹配到的字符；
+    //第一个参数：正则所匹配到的字符；
 
     //第二个参数：捕获括号所捕获到的字符；
 
@@ -164,7 +236,7 @@
     /**
      * Hyphenate a camelCase string.
      */
-    var hyphenateRE = /\B([A-Z])/g;
+    var hyphenateRE = /\B([A-Z])/g;  //\B  括号中边界检测
     var hyphenate = cached(function (str) {
         return str.replace(hyphenateRE, '-$1').toLowerCase() // ? '-$1'
     });
@@ -176,17 +248,17 @@
     function bind (fn, ctx) {
         function boundFn (a) {
             var l = arguments.length;
-            console.log(arguments)   //arguments.callee  = boundFn 它可以用来递归匿名函数。
+            //console.log(arguments)   //arguments.callee  = boundFn 它可以用来递归匿名函数。
             return l
                     ? l > 1 //如果实参数量大于1
                     ? fn.apply(ctx, arguments)
                     : fn.call(ctx, a) //如果实参数量等于1
                     : fn.call(ctx) //l 不存在 无实参
         }
-//        var num = 5
-//        num ? num > 10 ? num = 8 : num =  0 : num = 9
+       // var num = 5
+       // num ? num > 10 ? num = 8 : num =  0 : num = 9
 
-        // record original fn length 记录原始的形参数量
+       // record original fn length 记录原始的形参数量
         boundFn._length = fn.length;
         return boundFn
     }
@@ -206,7 +278,7 @@
     var boundGetNum = getNum.bind(mymodule);
     //boundGetNum() // 81
 
-    var boundGetNum1 = bind(getNum,mymodule)(this.num)
+    var boundGetNum1 = bind(getNum,mymodule)(this.num) //this.num 为实参
 
     //boundGetNum1  81
 
@@ -281,15 +353,15 @@
     /**
      * Return same value
      */
-    var identity = function (_) { return _; };
 
+    var identity = function (_) { return _; };
+    //identity()  undefined
 
     /**
      * Generate a static keys string from compiler modules.
      */
     function genStaticKeys (modules) {
         return modules.reduce(function (keys, m) {
-            console.log(m.staticKeys)
             return keys.concat(m.staticKeys || [])
         }, []).join(',')
     }
@@ -312,7 +384,7 @@
         model$21
     ];
 
-    console.log(genStaticKeys(modules$1))
+    //console.log(genStaticKeys(modules$1)) //staticClass,staticStyle
 
     /**
      * Check if two values are loosely equal - that is,
@@ -359,10 +431,11 @@
 
     function getSelf(n){
         if(n==1){
-            return false
+            return 1
         }
-        return getSelf(n-1)
-    } console.log(getSelf(3));
+        return n+getSelf(n-1)
+    }
+    //console.log(getSelf(3)) 6
     //递归是可以利用闭包缓存参数，直道满足外部表达式时return 结束递归
 
     //问题描述：给两个数，如果两个数相等，最大公约数是其本身。
@@ -426,6 +499,94 @@
         'errorCaptured'
     ];
 
+    var config = ({
+        /**
+         * Option merge strategies (used in core/util/options)
+         */
+        // $flow-disable-line
+        optionMergeStrategies: Object.create(null),
+
+        /**
+         * Whether to suppress warnings.
+         */
+        silent: false,
+
+        /**
+         * Show production mode tip message on boot?
+         */
+        productionTip: "development" !== 'production',
+
+        /**
+         * Whether to enable devtools
+         */
+        devtools: "development" !== 'production',
+
+        /**
+         * Whether to record perf
+         */
+        performance: false,
+
+        /**
+         * Error handler for watcher errors
+         */
+        errorHandler: null,
+
+        /**
+         * Warn handler for watcher warns
+         */
+        warnHandler: null,
+
+        /**
+         * Ignore certain custom elements
+         */
+        ignoredElements: [],
+
+        /**
+         * Custom user key aliases for v-on
+         */
+        // $flow-disable-line
+        keyCodes: Object.create(null),
+
+        /**
+         * Check if a tag is reserved so that it cannot be registered as a
+         * component. This is platform-dependent and may be overwritten.
+         */
+        isReservedTag: no,
+
+        /**
+         * Check if an attribute is reserved so that it cannot be used as a component
+         * prop. This is platform-dependent and may be overwritten.
+         */
+        isReservedAttr: no,
+
+        /**
+         * Check if a tag is an unknown element.
+         * Platform-dependent.
+         */
+        isUnknownElement: no,
+
+        /**
+         * Get the namespace of an element
+         */
+        getTagNamespace: noop,
+
+        /**
+         * Parse the real tag name for the specific platform.
+         */
+        parsePlatformTagName: identity,
+
+        /**
+         * Check if an attribute must be bound using property, e.g. value
+         * Platform-dependent.
+         */
+        mustUseProp: no,
+
+        /**
+         * Exposed for legacy reasons
+         */
+        _lifecycleHooks: LIFECYCLE_HOOKS
+    });
+
     //console.log(j())// j is not a function
 
     {  // 花括号  的作用是形成局部作用域  推测（）作用也是如此
@@ -433,6 +594,269 @@
         var o = ({name:"123",a:function(){}})
     }
 
+    /**
+     * Check if a string starts with $ or _
+     */
+    function isReserved (str) {
+        var c = (str + '').charCodeAt(0);
+        return c === 0x24 || c === 0x5F
+    }
+    // $ 36  _95
+    //【0x24 36】 【0x5F 95】
+    //【0x10 16】 【0x11 17】  【0x20 32】 【0x30  48】
+    //console.log(isReserved("_ds"))  true
+
+    /**
+     * Define a property. 定义属性
+     */
+    function def (obj, key, val, enumerable) {
+        Object.defineProperty(obj, key, {
+            value: val, //该属性对应的值。可以是任何有效的 JavaScript 值（数值，对象，函数等）。默认为 undefined。
+            enumerable: !!enumerable, //当且仅当该属性的enumerable为true时，该属性才能够出现在对象的枚举属性中。默认为 false
+            writable: true, //当且仅当该属性的writable为true时，value才能被赋值运算符改变。表示能不能够重写属性值，默认为false。 对应set和get方法 改写和返回修改后的属性
+            configurable: true //总开关，更改跟属性key有关的任意值; false:如果重新对这个属性进行定义的话，会提示出错,同时也不能删除。
+        });
+    }
+    //视图控制器
+    var userInfo = {};
+    Object.defineProperty(userInfo, "nickName", {
+        get: function(){
+            return document.getElementById('nickName').value;
+        },
+        set: function(nick){
+            document.getElementById('nickName').value = nick;
+        }
+    });
+    Object.defineProperty(userInfo, "introduce", {
+        get: function(){
+            return document.getElementById('introduce').innerHTML;
+        },
+        set: function(introduce){
+            document.getElementById('introduce').innerHTML = introduce;
+        }
+    })
+    document.getElementById('nickName').addEventListener("input",function(){
+        userInfo.introduce = userInfo.nickName
+    })
+    userInfo.nickName = "123";
+    userInfo.introduce = userInfo.nickName
+    //这些值不一定是自身属性，如果是继承来的也要考虑。为了确认保留这些默认值，可能要在这之前冻结 防止修改属性 Object.prototype，
+    //相关链接 https://www.jianshu.com/p/07ba2b0c8fca  https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+    //“key” 赋值 或者 取值的时候会分别触发 set 和 get 对应的函数
+
+    /**
+     * Parse simple path.
+     */
+    var bailRE = /[^\w.$]/;
+    // 匹配除了开头数字，字母，下划线和点 ,$ 的，从头开始匹配，匹配一次，test() 如果有满足此种模式的 返回true
+    // d..d.^& 匹配了 ^   如果有特殊符号则返回空
+    function parsePath (path) {
+        if (bailRE.test(path)) {
+            return
+        }
+        var segments = path.split('.');
+        return function (obj) {
+            for (var i = 0; i < segments.length; i++) {
+                if (!obj) { return }
+                obj = obj[segments[i]];
+            }
+            return obj
+        }
+    }
+    var reg = /[^\w.$]/  ///[^ ]/  匹配任何不在指定范围内的任意字符
+
+    //console.log(parsePath("$a")({$a:"123"})) // 123
+
+    // can we use __proto__? 是否可以用__proto__
+    var hasProto = '__proto__' in {};  // true
+
+    // Browser environment sniffing  判断所处环境
+    var inBrowser = typeof window !== 'undefined';
+    var inWeex = typeof WXEnvironment !== 'undefined' && !!WXEnvironment.platform;
+    var weexPlatform = inWeex && WXEnvironment.platform.toLowerCase();
+    var UA = inBrowser && window.navigator.userAgent.toLowerCase();
+    var isIE = UA && /msie|trident/.test(UA);
+    var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
+    var isEdge = UA && UA.indexOf('edge/') > 0;
+    var isAndroid = (UA && UA.indexOf('android') > 0) || (weexPlatform === 'android');
+    var isIOS = (UA && /iphone|ipad|ipod|ios/.test(UA)) || (weexPlatform === 'ios');
+    var isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
+
+    // Firefox has a "watch" function on Object.prototype...  火狐上对象有watch这个属性
+    var nativeWatch = ({}).watch;
+
+    var supportsPassive = false;
+    if (inBrowser) {
+        try {
+            var opts = {};
+            Object.defineProperty(opts, 'passive', ({
+                get: function get () {
+                    /* istanbul ignore next */
+                    supportsPassive = true;
+                }
+            })); // https://github.com/facebook/flow/issues/285
+            window.addEventListener('test-passive', null, opts); //?
+            //https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/addEventListener
+            //浏览器检查 opts 对象上的 passive 值时， supportsPassive 将会被设置为 true；如果不的话它将保持 false。
+            // 然后我们调用 addEventListener() 去设置一个指定这些选项的空事件处理器，
+            // 这样如果浏览器将第三个参数认定为对象的话，这些选项值就会被检查。
+        } catch (e) {}
+    }
+    //console.log(supportsPassive)  true
+
+    // this needs to be lazy-evaled because vue may be required before
+    // vue-server-renderer can set VUE_ENV
+    var _isServer;
+    var isServerRendering = function () {
+        if (_isServer === undefined) {
+            /* istanbul ignore if */
+            if (!inBrowser && typeof global !== 'undefined') {  //global undefined
+                // detect presence of vue-server-renderer and avoid
+                // Webpack shimming the process
+                _isServer = global['process'].env.VUE_ENV === 'server';
+            } else {
+                _isServer = false;
+            }
+        }
+        return _isServer
+    };
+
+    //isServerRendering()  false
+
+    // detect devtools
+    var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
+    //devtools  undefined
+
+    /* istanbul ignore next */ //是否是原生自带的函数
+    function isNative (Ctor) {
+        return typeof Ctor === 'function' && /native code/.test(Ctor.toString())
+    }
+    //console.log(isNative(Promise))  true
+
+    //ES6 Symbols也是一个集，但它的元素既不是字符串也不是对象。它是ES6的新成员：第七种基本类型。表示独一无二的值
+    //http://www.jb51.net/article/89087.htm
+    var hasSymbol =
+            typeof Symbol !== 'undefined' && isNative(Symbol) &&
+            typeof Reflect !== 'undefined' && isNative(Reflect.ownKeys); //Reflect.ownKeys  返回一个包含所有自身属性（不包含继承属性）的数组。
+
+    //console.log(hasSymbol)  true
+    var s1 = Symbol("s1");
+    var s2 = Symbol("s2");
+    // s1 === s2  false
+
+    //Reflect http://www.jb51.net/article/89087.htm
+    //要执行一个函数f，并给它传一组参数args， 还要绑定this的话 f.apply(obj, args)
+    //但是f的apply可能被重新定义成用户自己的apply了，所以还是这样写比较靠谱：  Function.prototype.apply.call(f, obj, args)
+    //Reflect.apply(f, obj, args)
+
+    //避免直接访问 __proto__  ES5提供了 Object.getPrototypeOf(obj) Reflect.getPrototypeOf(obj) 和 Reflect.setPrototypeOf(obj, newProto)， 这个是新的方法去访问和设置对象的原型：
+
+    var _Set;
+    /* istanbul ignore if */ // $flow-disable-line
+    if (typeof Set !== 'undefined' && isNative(Set)) {
+        // use native Set when available.
+        _Set = Set;
+    } else {
+        // a non-standard Set polyfill that only works with primitive keys.
+        _Set = (function () {
+            function Set () {
+                this.set = Object.create(null);
+            }
+            Set.prototype.has = function has (key) {
+                return this.set[key] === true
+            };
+            Set.prototype.add = function add (key) {
+                this.set[key] = true;
+            };
+            Set.prototype.clear = function clear () {
+                this.set = Object.create(null);
+            };
+
+            return Set;
+        }());
+    }
+    // 结合 new _Set使用
+    let s = new Set([1,2,3]);
+    s.add(5);
+    //console.log(s.size); 4
+    //console.log(s.has(100)); false
+
+    for(let e of s) {
+        //console.log(e); 1 2 3 5
+    }
+    s.forEach(function(e){
+        //console.log(e); 1 2 3 5
+    })
+
+    //Map https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+    var myMap = new Map();
+
+    var keyString = 'a string',
+            keyObj = {},
+            keyFunc = function() {};
+
+    // setting the values
+    myMap.set(keyString, "value associated with 'a string'");
+    myMap.set(keyObj, 'value associated with keyObj');
+    myMap.set(keyFunc, 'value associated with keyFunc');
+
+    //myMap.size; // 3
+
+    // getting the values
+    myMap.get(keyString);    // "value associated with 'a string'"
+    myMap.get(keyObj);       // "value associated with keyObj"
+    myMap.get(keyFunc);      // "value associated with keyFunc"
+    /*function noop (a, b, c) {}*/
+    var warn = noop;
+    var tip = noop;
+    var generateComponentTrace = (noop); // work around flow check
+    var formatComponentName = (noop);
+
+    {
+        var hasConsole = typeof console !== 'undefined';
+        var classifyRE = /(?:^|[-_])(\w)/g; //a-cda-asf_csd  [a-c]da[-a]sf[_c]sd   （）（） 两个括号表示两个子匹配 或的关系
+        var classify = function (str) { return str
+                .replace(classifyRE, function (c) { return c.toUpperCase(); })
+                .replace(/[-_]/g, ''); }; //将多余的————___替换成空
+
+        warn = function (msg, vm) {
+            var trace = vm ? generateComponentTrace(vm) : ''; //generateComponentTrace(vm) undefined
+
+            if (config.warnHandler) {
+                config.warnHandler.call(null, msg, vm, trace);
+            } else if (hasConsole && (!config.silent)) {
+                console.error(("[Vue warn]: " + msg + trace));
+            }
+        };
+        tip = function (msg, vm) {
+            if (hasConsole && (!config.silent)) {
+                console.warn("[Vue tip]: " + msg + (
+                                vm ? generateComponentTrace(vm) : ''
+                        ));
+            }
+        };
+        formatComponentName = function (vm, includeFile) {
+            if (vm.$root === vm) {
+                return '<Root>'
+            }
+            var options = typeof vm === 'function' && vm.cid != null
+                    ? vm.options
+                    : vm._isVue
+                    ? vm.$options || vm.constructor.options
+                    : vm || {};
+            var name = options.name || options._componentTag;
+            var file = options.__file;
+            if (!name && file) {
+                var match = file.match(/([^/\\]+)\.vue$/);
+                name = match && match[1];
+            }
+
+            return (
+                    (name ? ("<" + (classify(name)) + ">") : "<Anonymous>") +
+                    (file && includeFile !== false ? (" at " + file) : '')
+            )
+        };
+    }
 
 
 

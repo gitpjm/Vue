@@ -572,10 +572,10 @@
 
     {
         var hasConsole = typeof console !== 'undefined';
-        var classifyRE = /(?:^|[-_])(\w)/g;
+        var classifyRE = /(?:^|[-_])(\w)/g; //a-cda-asf_csd  [a-c]da[-a]sf[_c]sd   （）（） 两个括号表示两个子匹配 或的关系
         var classify = function (str) { return str
             .replace(classifyRE, function (c) { return c.toUpperCase(); })
-            .replace(/[-_]/g, ''); };
+            .replace(/[-_]/g, ''); }; //将多余的————___替换成空
 
         warn = function (msg, vm) {
             var trace = vm ? generateComponentTrace(vm) : '';
