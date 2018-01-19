@@ -664,7 +664,7 @@
 
     /**
      * A dep is an observable that can have multiple
-     * directives subscribing to it.
+     * directives subscribing to it. DEP是可观察的，可以有多个指令订阅它。
      */
     var Dep = function Dep () {
         this.id = uid++;
@@ -681,7 +681,7 @@
 
     Dep.prototype.depend = function depend () {
         if (Dep.target) {
-            Dep.target.addDep(this);
+            Dep.target.addDep(this); // 是watcher对象下的addDep方法
         }
     };
 
@@ -689,7 +689,7 @@
         // stabilize the subscriber list first
         var subs = this.subs.slice();
         for (var i = 0, l = subs.length; i < l; i++) {
-            subs[i].update();
+            subs[i].update();  //sub 是watcher对象的集合
         }
     };
 
@@ -701,7 +701,7 @@
 
     function pushTarget (_target) {
         if (Dep.target) { targetStack.push(Dep.target); }
-        Dep.target = _target;
+        Dep.target = _target;  //target 是watcher对象
     }
 
     function popTarget () {
