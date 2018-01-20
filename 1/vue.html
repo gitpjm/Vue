@@ -933,6 +933,35 @@
         }
     };
 
+    function setName(obj){
+        obj.name = 'a';
+        obj = new Object();
+        obj.name = 'b';
+        return obj;
+    }
+    var p = new Object();
+    var p2 = setName(p);
+    //alert(p.name); // a
+    //alert(p2.name); // b
+
+    var a = [1,2,3];
+    var b = a;
+    //a = [1,2,3,4];
+    b.push(6)
+    //alert(a);//1,2,3,
+    //alert(b); //1,2,3,6
+
+    //如果不对a进行赋值操作 a,b在内存中指向的是a在堆中开辟出来的内存
+
+    var v = "123";
+    var f = "123";
+    f = "123456"
+    // alert(f)
+    //alert(v)
+    // 无论是基本数据类型 还是引用数据类型 在进行赋值操作后都会在内存中开辟新的区域来存储
+    // 也就是说 对各自操作后不会影响原来的数据
+
+
 
 
 </script>
