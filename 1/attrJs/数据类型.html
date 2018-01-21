@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据类型</title>
+</head>
+<body>
+<h3>基本数据类型，引用数据类型,this,作用域，变量提升</h3>
+<script>
+    // 数据天生就是文静的，总想保持自己固有的本色；而代码却天生活泼，总想改变这个世界。
+    // https://segmentfault.com/a/1190000002789651
+    // 基本数据类型有这五种:Undefined、Null、String、Number、Boolean。
+    // 引用类型有这几种：object、Array、RegExp、Date、Function、特殊的基本包装类型(String、Number、Boolean)内置了一些方法
+    // 以及单体内置对象(Global、Math)。 http://www.jb51.net/article/85945.htm
+    // 基本类型的数据是存放在栈内存中的，而引用类型的数据是存放在堆内存中的
+    // 栈内存： 存放 [基本类型] 和 [引用类型的地址] ：随着函数执行完成被清理。 基本类型：变量名：变量至  引用类型：对象名：堆内存地址
+    // 栈是一种遵从后进先出原则(LIFO,全称为Last In First Out)的有序集合。栈顶永远是最新的元素。
+    // 堆内存：存放 [对象]：函数执行完不会被立即清除，除非其他地方没有引用。
+    // 堆主要用来存放对象的，栈主要是用来执行程序的.
+
+    // 堆（heap）栈（Stack）  区别队列 https://www.jianshu.com/p/5e0e8d183102
+    // 栈：js执行首先进入全局的执行环境，所以在全局声明的变量，放在栈的底部，如果子执行过程中遇到函数执行，该函数会放到栈的顶部，依次进行下去。结合js单线程理解
+    // 堆：js堆内存中存放数据是杂乱无章的
+    // 区分全局作用域和局部作用域，全局作用域声明的变量，如果不手动清除，不会被垃圾回收机制回收。局部声明的变量，如果不存在引用关系，函数执行完会自动都被垃圾回收机制回收（闭包除外）
+
+    //http://blog.csdn.net/thumd_lee/article/details/53523744 执行环境、执行环境栈、变量对象、活动对象,作用域
+    // 执行流依次进入的执行环境在逻辑上形成了一个栈，栈的底部永远是全局环境，
+    // 栈的顶部则是处于活动状态当前的执行环境(浏览器总是执行处于栈顶的上下文)。当执行流进入一个函数时，函数的环境就会被推入这个环境栈中，
+    // 当函数执行完毕之后，栈将这个执行环境弹出，然后把控制权返回给之前的执行环境。这样实现的原因是由于 Javascript 解释器是单线程的，
+    // 也就是同一时刻只能发生一件事情，其他等待执行的上下文或事件就会在这个环境栈中排队等待。
+    // 值得注意的一点是：每次函数的调用都会创建一个执行环境压入栈中，无论是函数内部的函数、还是递归调用等。
+
+
+    (function foo(){
+
+        console.log(typeof x);//"function"
+        var x = 10;
+        console.log(y);//undefined 而不是 “y is not defined” ,这就是变量声明提升！
+        var y = 20;
+        console.log(typeof x);//"number"
+        function x(){}
+
+    })();
+
+    var string = "aaa";
+    var string2 = string.substring(0)
+
+    // 基本类型的确没有方法和属性，因为一旦创建了属性或者方法就会被立刻销毁，
+    // 但是为了方便程序员对这类的基本类型数据比较方便的操作，在底层做了一些工作，其实这段代码相当于
+
+    // var string = new String("aaa");
+    // var string2 = string.substring(0);
+    // string = null;
+
+    // 所以String  Boolean  Number 这三种类型也叫做  基本包装类型
+
+    function setName(obj){
+        obj.name = 'a';
+        obj = new Object();
+        obj.name = 'b';
+        return obj;
+    }
+    var p = new Object();
+    var p2 = setName(p);
+    //alert(p.name); // a
+    //alert(p2.name); // b
+
+    var a = [1,2,3];
+    var b = a;
+    //a = [1,2,3,4];
+    b.push(6)
+    //alert(a);//1,2,3,
+    //alert(b); //1,2,3,6
+
+    //如果不对a进行赋值操作 a,b在内存中指向的是a在堆中开辟出来的内存
+
+    var v = "123";
+    var f = "123";
+    f = "123456"
+    // alert(f)
+    //alert(v)
+    // 无论是基本数据类型 还是引用数据类型 在进行赋值操作后都会在内存中开辟新的区域来存储
+    // 也就是说 对各自操作后不会影响原来的数据
+
+    
+
+
+</script>
+</body>
+</html>
