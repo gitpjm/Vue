@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>vue源码分析</title>
 </head>
 <body>
 <div id="box">
@@ -781,6 +781,10 @@
     //console.log(s.size); 4
     //console.log(s.has(100)); false
 
+    let d = new _Set();
+    d.add(1)
+    //console.log(d.has(2))  false
+
     for(let e of s) {
         //console.log(e); 1 2 3 5
     }
@@ -933,33 +937,95 @@
         }
     };
 
-    function setName(obj){
-        obj.name = 'a';
-        obj = new Object();
-        obj.name = 'b';
-        return obj;
+    // the current target watcher being evaluated.
+    // this is globally unique because there could be only one
+    // watcher being evaluated at any time.
+    Dep.target = null;
+    var targetStack = [];  //watcher 栈
+
+    function pushTarget (_target) {
+        if (Dep.target) { targetStack.push(Dep.target); }
+        Dep.target = _target;  //target 是watcher对象
     }
-    var p = new Object();
-    var p2 = setName(p);
-    //alert(p.name); // a
-    //alert(p2.name); // b
 
-    var a = [1,2,3];
-    var b = a;
-    //a = [1,2,3,4];
-    b.push(6)
-    //alert(a);//1,2,3,
-    //alert(b); //1,2,3,6
+    function popTarget () {
+        Dep.target = targetStack.pop();
+    }
 
-    //如果不对a进行赋值操作 a,b在内存中指向的是a在堆中开辟出来的内存
+    // 定义虚拟Dom
+    var VNode = function VNode (
+            tag,
+            data,
+            children,
+            text,
+            elm,
+            context,
+            componentOptions,
+            asyncFactory
+    ) {
+        this.tag = tag;
+        this.data = data;
+        this.children = children;
+        this.text = text;
+        this.elm = elm;
+        this.ns = undefined;
+        this.context = context;
+        this.fnContext = undefined;
+        this.fnOptions = undefined;
+        this.fnScopeId = undefined;
+        this.key = data && data.key;
+        this.componentOptions = componentOptions;
+        this.componentInstance = undefined;
+        this.parent = undefined;
+        this.raw = false;
+        this.isStatic = false;
+        this.isRootInsert = true;
+        this.isComment = false;
+        this.isCloned = false;
+        this.isOnce = false;
+        this.asyncFactory = asyncFactory;
+        this.asyncMeta = undefined;
+        this.isAsyncPlaceholder = false;
+    };
 
-    var v = "123";
-    var f = "123";
-    f = "123456"
-    // alert(f)
-    //alert(v)
-    // 无论是基本数据类型 还是引用数据类型 在进行赋值操作后都会在内存中开辟新的区域来存储
-    // 也就是说 对各自操作后不会影响原来的数据
+    var prototypeAccessors = { child: { configurable: true } };
+
+    // DEPRECATED: alias for componentInstance for backwards compat.
+    /* istanbul ignore next */
+    prototypeAccessors.child.get = function () {
+        return this.componentInstance
+    };
+    // console.log(VNode.prototype)
+    Object.defineProperties( VNode.prototype, prototypeAccessors );
+
+    // 创建空的Dom
+    var createEmptyVNode = function (text) {
+        if ( text === void 0 ) text = '';
+
+        var node = new VNode();
+        node.text = text;
+        node.isComment = true;
+        return node
+    };
+    //console.log(createEmptyVNode('div'))   VNode {tag: undefined, data: undefined, children: undefined, text: "div", elm: undefined, …}
+
+   // void方式获取undefined 通用准则 因为undefined在javascript中不是保留字
+    function G() {
+        var undefined = "hello world";
+        //console.log(undefined); // "hello world"
+    }
+    //console.log(undefined); // undefined
+    //除了采用void能保证取到undefined值以外,还有一种方式是通过函数调用
+    (function(window, document, undefined) {})(window, document);
+
+    function createTextVNode (val) {
+        return new VNode(undefined, undefined, undefined, String(val))
+    }
+    console.log(createTextVNode(""))
+
+
+
+
 
 
 
