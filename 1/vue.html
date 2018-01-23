@@ -995,7 +995,7 @@
     prototypeAccessors.child.get = function () {
         return this.componentInstance
     };
-    // console.log(VNode.prototype)
+    // console.log(VNode.prototype) VNode {tag: undefined, data: undefined, children: undefined, text: "", elm: undefined, …}
     Object.defineProperties( VNode.prototype, prototypeAccessors );
 
     // 创建空的Dom
@@ -1021,8 +1021,332 @@
     function createTextVNode (val) {
         return new VNode(undefined, undefined, undefined, String(val))
     }
-    console.log(createTextVNode(""))
+    // console.log(createTextVNode(""))
 
+    // optimized shallow clone
+    // used for static nodes and slot nodes because they may be reused across
+    // multiple renders, cloning them avoids errors when DOM manipulations rely
+    // on their elm reference.
+    function cloneVNode (vnode, deep) {
+        var componentOptions = vnode.componentOptions;
+        var cloned = new VNode(
+                vnode.tag,
+                vnode.data,
+                vnode.children,
+                vnode.text,
+                vnode.elm,
+                vnode.context,
+                componentOptions,
+                vnode.asyncFactory
+        );
+        cloned.ns = vnode.ns;
+        cloned.isStatic = vnode.isStatic;
+        cloned.key = vnode.key;
+        cloned.isComment = vnode.isComment;
+        cloned.fnContext = vnode.fnContext;
+        cloned.fnOptions = vnode.fnOptions;
+        cloned.fnScopeId = vnode.fnScopeId;
+        cloned.isCloned = true;
+        if (deep) {
+            if (vnode.children) {
+                cloned.children = cloneVNodes(vnode.children, true);
+            }
+            if (componentOptions && componentOptions.children) {
+                componentOptions.children = cloneVNodes(componentOptions.children, true);
+            }
+        }
+        return cloned
+    }
+
+    function cloneVNodes (vnodes, deep) {
+        var len = vnodes.length;
+        var res = new Array(len);
+        for (var i = 0; i < len; i++) {
+            res[i] = cloneVNode(vnodes[i], deep);
+        }
+        return res
+    }
+
+    /*
+     * not type checking this file because flow doesn't play well with
+     * dynamically accessing methods on Array prototype
+     */
+
+    var arrayProto = Array.prototype;
+    // arrayProto  [constructor: ƒ, concat: ƒ, pop: ƒ, push: ƒ, shift: ƒ, …]
+    var arrayMethods = Object.create(arrayProto); //arrayMethods  //Array {}
+    [
+        'push',
+        'pop',
+        'shift',
+        'unshift',
+        'splice',
+        'sort',
+        'reverse'
+    ].forEach(function (method) {
+        // cache original method  这里是原生Array的原型方法
+        var original = arrayProto[method];
+        def(arrayMethods, method, function mutator () {  // arrayMethods.method = function mutaor(){}
+            var args = [], len = arguments.length;
+            while ( len-- ) args[ len ] = arguments[ len ];
+            // console.log(this)  ["1", "2", "3", "1", "2", "3", __ob__: Observer]
+            // console.log(original)  ƒ push() { [native code] }
+            var result = original.apply(this, args); // 原生Array的原型方法 例如push.apply(this,args); 改变push内部的this指向调用这个方法的数组，参数argus
+            // console.log(this)  ["1", "2", "3", "1", "2", "3", "12", __ob__: Observer]
+            // result 7
+            var ob = this.__ob__;  //在Observer  def(value, '__ob__', this);  把数组（value）定义了__ob__ 属性  值为 Observer
+            var inserted;
+            switch (method) {
+                case 'push':
+                case 'unshift':  //添加  取出添加的元素 并监听变化
+                    inserted = args;
+                    break
+                case 'splice':
+                    inserted = args.slice(2); // 取出插入的元素 并监听变化
+                    break
+            }
+            if (inserted) { ob.observeArray(inserted); }
+            // notify change 通知变化
+            ob.dep.notify();
+            return result
+        });
+    });
+
+    var arrayKeys = Object.getOwnPropertyNames(arrayMethods);
+
+    /**
+     * By default, when a reactive property is set, the new value is
+     * also converted to become reactive. However when passing down props,
+     * we don't want to force conversion because the value may be a nested value
+     * under a frozen data structure. Converting it would defeat the optimization.
+     */
+    var observerState = {
+        shouldConvert: true
+    };
+
+    /**
+     * Observer class that are attached to each observed
+     * object. Once attached, the observer converts target
+     * object's property keys into getter/setters that
+     * collect dependencies and dispatches updates.
+     */
+    var Observer = function Observer (value) {
+        //console.log(this)
+        this.value = value;
+        this.dep = new Dep();
+        this.vmCount = 0;
+        def(value, '__ob__', this); // 把要观察的对象value 绑定key：__ob__ val：Observer对象
+        if (Array.isArray(value)) {
+            var augment = hasProto  //true
+                    ? protoAugment
+                    : copyAugment;
+            augment(value, arrayMethods, arrayKeys);
+            this.observeArray(value);
+        } else {
+            this.walk(value);
+        }
+    };
+
+    /**
+     * Walk through each property and convert them into  遍历每个属性转化到getter/setters方法，只适用于对象
+     * getter/setters. This method should only be called when
+     * value type is Object.
+     */
+    Observer.prototype.walk = function walk (obj) {
+        var keys = Object.keys(obj);
+        for (var i = 0; i < keys.length; i++) {
+            defineReactive(obj, keys[i], obj[keys[i]]);
+        }
+    };
+
+    /**
+     * Observe a list of Array items.
+     */
+    Observer.prototype.observeArray = function observeArray (items) {
+        for (var i = 0, l = items.length; i < l; i++) {
+            observe(items[i]);
+        }
+    };
+
+    // helpers
+
+    /**
+     * Augment an target Object or Array by intercepting
+     * the prototype chain using __proto__
+     */
+    function protoAugment (target, src, keys) {   //target ： value 要监听的数组  src ： arrayMethods 这个空数组的属性上定义了我们封装好的push等方法
+        /* eslint-disable no-proto */
+        target.__proto__ = src;  //// 将我们要监听的数组的原型指针指向上面定义的空数组对象  //查找机制是顺着原型链依次往下找 空数组的第一条原型链是定义好的方法 然后再是数组原生的方法
+        /* eslint-enable no-proto */
+    }
+
+    /**
+     * Augment an target Object or Array by defining
+     * hidden properties.
+     */
+    /* istanbul ignore next */
+    function copyAugment (target, src, keys) {
+        for (var i = 0, l = keys.length; i < l; i++) {
+            var key = keys[i];
+            def(target, key, src[key]);
+        }
+    }
+    /**
+     * Attempt to create an observer instance for a value, 试图创建一个值的观察者实例，
+     * returns the new observer if successfully observed, 如果成功观察，则返回新的观察者，
+     * or the existing observer if the value already has one. 或已经存在的观察
+     */
+
+    function observe (value, asRootData) {
+        if (!isObject(value) || value instanceof VNode) {
+            // object instanceof constructor instanceof 运算符用来检测 constructor.prototype 是否存在于参数 object 的原型链
+            // 检测value是否和vNode共用一条原型链 value = new VNode()   value instanceof VNode  true
+            return
+        }
+        var ob;
+        if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) { // the existing observer if the value already has one.  def(value, '__ob__', this);
+            ob = value.__ob__;
+        } else if (
+                observerState.shouldConvert &&  // true
+                !isServerRendering() && //true
+                (Array.isArray(value) || isPlainObject(value)) &&
+                Object.isExtensible(value) &&  // The Object.isExtensible() method determines if an object is extensible (whether it can have new properties added to it).
+                !value._isVue // true
+        ) {
+            ob = new Observer(value);
+        }
+        if (asRootData && ob) {
+            ob.vmCount++;
+        }
+        return ob
+    }
+    var arr = ['1','2','3','1','2','3']
+    var obs = new Observer(arr)
+    // obs Observer {value: Array(6), dep: Dep, vmCount: 0}
+    var newLength = obs.value.splice(2,1,"32232"); //array.splice(index,howmany,item1,.....,itemX)
+    // obs.value  ["1", "2", "32232", "1", "2", "3", __ob__: Observer]
+    //简化版vue数组 https://www.cnblogs.com/Darlietoothpaste/p/6682407.html
+
+
+    /**
+     * Define a reactive property on an Object.
+     */
+    function defineReactive (
+            obj,
+            key,
+            val,
+            customSetter,
+            shallow
+    ) {
+        var dep = new Dep();
+
+        var property = Object.getOwnPropertyDescriptor(obj, key);
+        if (property && property.configurable === false) {
+            return
+        }
+        //The Object.getOwnPropertyDescriptor()  获取自身的属性 而不是从原型链上获取
+        // method returns a property descriptor for an own property (that is, one directly present on an object and
+        // not in the object's prototype chain) of a given object.
+
+        // cater for pre-defined getter/setters  // 获取预先定义的getter/setters
+        var getter = property && property.get;
+        var setter = property && property.set;
+
+        var childOb = !shallow && observe(val);
+        Object.defineProperty(obj, key, {
+            enumerable: true,
+            configurable: true,
+            get: function reactiveGetter () {  // 每个属性下都会绑定get和set方法
+                var value = getter ? getter.call(obj) : val;
+                if (Dep.target) {  //pushTarget() 执行这个方法后  Dep.target 才会有Watcher这个对象
+                    dep.depend();
+                    if (childOb) {
+                        childOb.dep.depend();
+                        if (Array.isArray(value)) {
+                            dependArray(value);
+                        }
+                    }
+                }
+                return value
+            },
+            set: function reactiveSetter (newVal) {
+                var value = getter ? getter.call(obj) : val;
+                /* eslint-disable no-self-compare */
+                if (newVal === value || (newVal !== newVal && value !== value)) {
+                    return
+                }
+                /* eslint-enable no-self-compare */
+                if ("development" !== 'production' && customSetter) {
+                    customSetter();
+                }
+                if (setter) {
+                    setter.call(obj, newVal);
+                } else {
+                    val = newVal;
+                }
+                childOb = !shallow && observe(newVal);
+                dep.notify();  // 通知订阅obersver的dep 更新视图  dep 通知watcher 改变视图
+            }
+        });
+    }
+
+    var observeObj = {content:"234",id:"423"}
+    var obsObj = new Observer(observeObj)
+    var akl = obsObj.value  // 自动执行get方法
+    obsObj.value.content = "132" // 自动执行set方法
+
+    /**
+     * Set a property on an object. Adds the new property and
+     * triggers change notification if the property doesn't
+     * already exist.
+     */
+    function set (target, key, val) {
+        if (Array.isArray(target) && isValidArrayIndex(key)) {
+            target.length = Math.max(target.length, key);
+            target.splice(key, 1, val);
+            return val
+        }
+        if (key in target && !(key in Object.prototype)) {
+            target[key] = val;
+            return val
+        }
+        var ob = (target).__ob__;
+        if (target._isVue || (ob && ob.vmCount)) {
+            "development" !== 'production' && warn(
+                    'Avoid adding reactive properties to a Vue instance or its root $data ' +
+                    'at runtime - declare it upfront in the data option.'
+            );
+            return val
+        }
+        if (!ob) {
+            target[key] = val;
+            return val
+        }
+        defineReactive(ob.value, key, val);
+        ob.dep.notify();
+        return val
+    }
+    /**
+     * Helper that recursively merges two data objects together.
+     */
+    function mergeData (to, from) {
+        if (!from) { return to }
+        var key, toVal, fromVal;
+        var keys = Object.keys(from);
+        for (var i = 0; i < keys.length; i++) {
+            key = keys[i];
+            toVal = to[key];
+            fromVal = from[key];
+            if (!hasOwn(to, key)) {
+                set(to, key, fromVal);
+            } else if (isPlainObject(toVal) && isPlainObject(fromVal)) {
+                mergeData(toVal, fromVal);
+            }
+        }
+        return to
+    }
+    // console.log(mergeData({dk:"132"},{abc:"123132"})) {dk: "132", abc: "123132"}
+    console.log(mergeData ({dk:"132"}, obsObj))
 
 
 
