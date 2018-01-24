@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作用域</title>
+</head>
+<body>
+<script>
+    // 作用域 引用类型 this
+    // 基本数据类型 Undefined Null Number Boolean String
+    // 引用数据类型 Object Function RegExp Date
+
+    // 作用域 局部 全局
+    // 全局作用域声明的变量，如果不手动清除，不会被垃圾回收机制回收。局部声明的变量，如果不存在引用关系，
+    // 函数执行完会自动都被垃圾回收机制回收（闭包除外）
+
+    // a()
+    {
+        function a () {}
+    }
+    // c()
+    (
+        c = function () {}
+    )
+
+    function isPrimitive (value) {
+        return (
+                typeof value === 'string' ||
+                typeof value === 'number' ||
+                typeof value === 'symbol' ||
+                typeof value === 'boolean'
+        )
+    }
+
+    (function foo(){
+        console.log(typeof x);
+        var x = 10;
+        console.log(y);
+        var y = 20;
+        console.log(typeof x);
+        function x(){}
+    })();
+
+    (function (global,factory) {
+        global.Vue = factory()
+    }(this,function(){
+        function Vue$3 (options) {
+            // console.log(options)
+        }
+        return Vue$3;
+    }))
+    var v = new Vue({})
+
+    // 作用域链的查找机制:
+
+    // 引用数据类型 https://www.cnblogs.com/huaan011/p/4381703.html
+    var a = {n:1};
+    var b = a;
+    a.x = a = {n:2}; // [1] a.x => {n:1,x:undefined} b=>{n:1,x:undefined}  [2]  a = {n:2}(a重新开辟内存)  [3] a.x => {n:2}  b=>{n:1,x:{n:2}}
+    // console.log(a.x);  //undefined
+    // console.log(b.n);  //1
+    // console.log(b.x);  //{n: 2}
+
+    function closure () {
+        var i = 10;
+        var str = "OK";
+        return function () {
+            alert(++i);
+        }
+    }
+
+    var fn = closure();
+    // fn();
+    //当内部函数执行完成以后，将fn全局变量赋值为null，相当于对closure的引用消失了，垃圾回收器不定时的会回收该变量
+    fn = null;
+
+</script>
+
+</body>
+</html>
