@@ -7,6 +7,8 @@
 <body>
 <h3>函数柯里化，循环，map方法底层实现，this，call继承</h3>
 <script>
+    var arr = [1,2,3]
+    console.log(arr.slice())
     function square(i) {
         return i * i;
     }
@@ -44,7 +46,7 @@
 
     function currying(fn) {
         var slice = Array.prototype.slice1,
-                  __args = slice.call(arguments,1);//从arguments【map, square】  把截取square赋值给__args
+                  __args = slice.call(arguments,1);//从arguments【map, square】  把截取square赋值给__args 从一开始
         return (function () {
             var __inargs = slice.call(arguments); //mapSQ([1, 2, 3, 4, 5]) arguments  [1, 2, 3, 4, 5]
             return fn.apply(null, __args.concat(__inargs)); //拼接参数到map中 map(square, [1, 2, 3, 4, 5]);
@@ -52,12 +54,14 @@
     }
 
     var mapSQ = currying(map, square);
-    mapSQ([1, 2, 3, 4, 5]); //[1, 4, 9, 16, 25]
+    mapSQ([1, 2, 3, 4, 5],[1, 2, 3, 4, 5]); //[1, 4, 9, 16, 25]
     mapSQ([1, 2, 3, 4, 5]);
     mapSQ([6, 7, 8, 9, 10]);
 
     var mapDB = currying(map, dubble);
     mapDB([1, 2, 3, 4, 5]);
+    mapDB([6, 7, 8, 9, 10]);
+    mapDB([10, 20, 30, 40, 50]); mapDB([1, 2, 3, 4, 5]);
     mapDB([6, 7, 8, 9, 10]);
     mapDB([10, 20, 30, 40, 50]);
 
