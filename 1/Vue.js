@@ -219,7 +219,7 @@
      * Mix properties into target object.
      */
     function extend (to, _from) {
-        console.log(to)
+        // console.log(to)
         for (var key in _from) {
             to[key] = _from[key];
         }
@@ -1510,6 +1510,7 @@
         return res
     }
 
+
     /*  */
 
     function validateProp (
@@ -1521,7 +1522,7 @@
         var prop = propOptions[key];
         var absent = !hasOwn(propsData, key);
         var value = propsData[key];
-        // handle boolean props
+        //  handle boolean props
         if (isType(Boolean, prop.type)) {
             if (absent && !hasOwn(prop, 'default')) {
                 value = false;
@@ -1542,6 +1543,7 @@
         {
             assertProp(prop, key, value, vm, absent);
         }
+        // console.log(value) // 子组件：（父组件传递的数据）
         return value
     }
 

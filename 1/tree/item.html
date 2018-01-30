@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>item</title>
+    <style>
+        body{
+            background:#fff;
+        }
+        [v-cloak]{
+            display:none
+        }
+        /*css代码*/
+        #menu{
+            width: 125px; /*设置为0 隐藏自定义菜单*/
+            height: 125px;
+            overflow: hidden; /*隐藏溢出的元素*/
+            box-shadow: 0 1px 1px #888,1px 0 1px #ccc;
+            position: absolute; /*自定义菜单相对与body元素进行定位*/
+            display:none
+        }
+        .menu{
+            width: 130px;
+            height: 25px;
+            line-height: 25px;
+            padding: 0 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="box">
+    <div v-cloak>
+        <li v-for="item in data" :style="{color:item.color}">{{ item.name }}</li>
+    </div>
+</div>
+<div id="menu">
+    <div class="menu">功能1</div>
+    <div class="menu">功能2</div>
+    <div class="menu">功能3</div>
+    <div class="menu">功能4</div>
+    <div class="menu">功能5</div>
+</div>
+<script src="../VueCompare.js"></script>
+<script type="module">
+    import Data from './apiTree.js'
+    console.log(Data)
+
+
+    let data = Data.data2
+    new Vue({
+        el: '#box',
+        data () {
+          return {
+              active:false
+          }
+        },
+        computed: {
+            data () {
+                var obj = {};
+                var count = 0;
+                var arr = [];
+                var colorArr = ["#ddd","#ccc","#aaa","#F0F"];
+                for(var key in data){
+                    if( !obj[data[key].name] ) {
+                        count++;
+                        obj[data[key].name] = true
+                        data[key].color = colorArr[count-1]
+                        arr.push(data[key])
+                    }
+                }
+                console.log("共有:"+arr.length+"")
+                for(var keys in data){
+                    for( var j = 0;j <arr.length; j++ ) {
+                        if( arr[j]['name'] === data[keys]['name'] ){
+                            data[keys]['color'] = arr[j]['color']
+                        }
+                    }
+                }
+                return data
+            }
+        }
+    })
+    function whichButton(event)
+    {
+        var btnNum = event.button;
+        if (btnNum==2)
+        {
+            //获取我们自定义的右键菜单
+
+            var menu=document.querySelector("#menu");
+
+            //根据事件对象中鼠标点击的位置，进行定位
+
+            menu.style.left=event.clientX+'px';
+            menu.style.top=event.clientY+'px';
+
+            //改变自定义菜单的宽，让它显示出来
+
+            menu.style.display='block';
+            return false
+        }
+        else if(btnNum==0)
+        {
+            document.querySelector('#menu').style.display='none';
+        }
+    }
+    document.onmousedown = function (e) {
+        whichButton(e)
+    }
+    document.oncontextmenu=function(e){
+        e.preventDefault();//取消默认的浏览器自带右键
+     }
+
+
+</script>
+</body>
+</html>

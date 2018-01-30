@@ -31,10 +31,11 @@
 <div class="container">
     <div id="app">
         <tree-menu
-                v-for="key in tree"
-                :nodes="key.nodes"
+                v-for="Key in tree"
+                :nodes="Key.Nodes"
+                :key="Key.name"
                 :depth="0"
-                :label="key.label"
+                :label="Key.name"
         ></tree-menu>
     </div>
 </div>
@@ -51,51 +52,17 @@
         <tree-menu
                 v-if="showChildren"
                 v-for="node in nodes"
-                :nodes="node.nodes"
-                :label="node.label"
+                :nodes="node.Nodes"
+                :key="node.name"
+                :label="node.name"
                 :depth="depth + 1"
-        ><!--showChildren 控制的只是当前组件的显示与隐藏 v-for绑定的下一级的nodes showChildren只有对有nodes对象有作用 最外层的root控制所有数据的显示隐藏-->
+        > <!--showChildren 控制的只是当前组件的显示与隐藏 v-for绑定的下一级的nodes showChildren只有对有nodes对象有作用 最外层的root控制所有数据的显示隐藏-->
         </tree-menu>
     </div>
 </script>
-<script>
-    let tree = [{
-        label: 'root',
-        nodes: [
-            {
-                label: 'item1',
-                nodes: [
-                    {
-                        label: 'item1.1'
-                    },
-                    {
-                        label: 'item1.2',
-                        nodes: [
-                            {
-                                label: 'item1.2.1'
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                label: 'item2'
-            }
-        ]
-    },
-        {
-            label: 'root1',
-            nodes: [
-                    {
-                        label: 'item1',
-                    },
-                    {
-                        label: 'item2'
-                    }
-            ]
-      },
-    ]
-
+<script type="module">
+    import Data from './apiTree.js'
+    let tree = Data.data.Model.Nodes
     Vue.component('tree-menu', {
         template: '#tree-menu',
         props: [ 'nodes', 'label', 'depth' ],
@@ -124,6 +91,9 @@
             toggleChildren() {
                 this.showChildren = !this.showChildren;
             }
+        },
+        mounted (){
+            console.log(1)
         }
     });
 
