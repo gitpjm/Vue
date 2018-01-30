@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>flex</title>
+    <style>
+        .flex{
+            display:flex;
+            flex-direction:row;
+            justify-content:flex-start;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+        .item{
+            background:#ccc;
+            width:200px;
+            height:200px;
+            text-align:center;
+            display:flex;
+            flex-direction: column;
+            justify-content:center;
+            align-items:center;
+        }
+        .center{
+            height:30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex">
+        <div class="item">
+            <div class="center">
+                12
+            </div>
+            <div class="center">
+                12
+            </div>
+        </div>
+        <div class="item">34</div>
+        <div class="item">56</div>
+        <div class="item">78</div>
+        <div class="item">12</div>
+        <div class="item">34</div>
+        <div class="item">56</div>
+        <div class="item">78</div>
+    </div>
+</body>
+</html>
