@@ -7,6 +7,199 @@
 <body>
 <script>
     /*http://www.jb51.net/article/53824.htm*/
+    // 工厂模式
+    function createBlog(name, url) {
+        var o = new Object();
+        o.name = name;
+        o.url = url;
+        o.sayUrl= function() {
+            alert(this.url);
+        }
+        return o;
+    }
+
+    var blog1 = createBlog('wuyuchang', 'http://www.jb51.net/');
+
+    // 构造函数模式
+    function Blog(name, url) {
+        this.name = name;
+        this.url = url;
+        this.alertUrl = function() {
+            alert(this.url);
+        }
+    }
+
+    var blog = new Blog('wuyuchang', 'http://www.jb51.net/');
+    console.log(blog instanceof Blog);
+
+    // 混合模式（原型模式 + 构造函数模式）
+    function Blog(name, url, friend) {
+        this.name = name;
+        this.url = url;
+        this.friend = friend;
+    }
+
+    Blog.prototype.alertInfo = function() {
+        alert(this.name + this.url + this.friend);
+    }
+
+    var blog1 = new Blog('wuyuchang', 'http://tools.jb51.net/', ['fr1', 'fr2', 'fr3']),
+        blog2 = new Blog('wyc', 'http://**.com', ['a', 'b']);
+    //console.log(blog1)
+    //blog1.friend.pop();
+    //blog.alertInfo();  // wuyuchanghttp://tools.jb51.net/fr1,fr2
+    //blog2.alertInfo();  // wychttp://**.coma,b
+
+
+
+    // 动态原型模式
+    function Blog(name, url) {
+        this.name = name;
+        this.url = url;
+
+        if (typeof this.alertInfo != 'function') {
+            // 这段代码只执行了一次
+            alert('exe time');
+            Blog.prototype.alertInfo = function() {
+                alert(thia.name + this.url);
+            }
+        }
+    }
+
+    var blog = new Blog('wuyuchang', 'http://tools.jb51.net'),
+    blog2 = new Blog('wyc', 'http:***.com');
+
+    //  原型链继承 SubType.prototype = new SuperType();
+    //  借用构造函数 call apply
+    //  组合继承（原型链+借用构造函数）
+
+    /* 原型式继承 */
+    function object(o) {
+        function F() {}
+        F.prototype = o;
+        return new F();
+    }
+
+    var person = {
+        name : 'wuyuchang',
+        friends : ['wyc', 'Nicholas', 'Tim']
+    }
+
+    var anotherPerson = object(person);
+    anotherPerson.name = 'Greg';
+    anotherPerson.friends.push('Bob');
+
+    var anotherPerson2 = object(person);
+    anotherPerson2.name = 'Jack';
+    anotherPerson2.friends.push('Rose');
+
+    console.log(person.friends);  // wyc,Nicholas,Tim,Bob,Rose
+
+    //寄生式继承
+    function createAnother(original){
+        var clone = Object.create(original); //通过调用函数创建一个新对象
+        clone.sayHi = function(){    //以某种方式来增强这个对象
+            alert("Hi");
+        };
+        return clone;      //返回这个对象
+    }
+
+    var person = {
+        name: "Bob",
+        friends: ["Shelby", "Court", "Van"]
+    };
+    var anotherPerson = createAnother(person);
+    anotherPerson.sayHi();
+
+
+    // 寄生组合继承模式
+    function inheritPrototype(subType, superType){
+        var protoType = Object.create(superType.prototype); //创建对象副本
+        protoType.constructor = subType;     //增强对象 构造函数继承
+        subType.prototype = protoType;      //指定对象 继承副本
+    }
+    function SuperType(name){
+        this.name = name;
+        this.colors = ["red", "blue", "green"];
+    }
+    SuperType.prototype.sayName = function(){
+        alert(this.name);
+    }
+    SuperType.prototype.arr = ["123"]
+
+    function SubType(name, age){
+        SuperType.call(this, name);　　//第二次调用SuperType()
+
+        this.age = age;
+    }
+    inheritPrototype(SubType, SuperType)
+    SubType.prototype.sayAge = function(){
+        alert(this.age);
+    }
+
+    var instance = new SubType("Bob", 18);
+    var instance1 = new SuperType("Bob", 18);
+    instance1.arr.push("123")
+    console.log(instance)
+    console.log(instance1)
+    //instance.sayName();
+    //instance.sayAge();
+
+    // 把需要私有的引用数据类型放到构造函数中 可以避免原型下的引用类型被共享
+    function A() {
+        this.name = "A"
+        this.arr1 = ["12332"]
+    }
+    function B() {
+        this.name1 = "B"
+    }
+    A.prototype = {abc:"123",arr:['1','2']}
+    B.prototype = new A(); // 把A的实例(构造函数+原型)挂载到B的原型下面  B的原型指向实例的__proto__
+    B.prototype.abc= "dkkdd"
+    var a = new A();
+//  B.prototype.__proto__ = new A();
+//  B.prototype = Object.create(A.prototype)
+    var b = new B(); //b
+    a.arr1.push(123)
+    console.log(a)
+    console.log(b)
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </script>
 </body>
 </html>

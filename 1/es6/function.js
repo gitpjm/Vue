@@ -118,4 +118,3 @@ var arrS = arrString.split('').reduce((x => {
 
 
 
-

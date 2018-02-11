@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>offset</title>
+</head>
+<body>
+<script src="http://cdn.bootcss.com/blueimp-md5/1.1.0/js/md5.min.js"></script>
+<script>
+    function addTag(type, label) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                let t = {
+                    id: 1,
+                    label,
+                    type,
+                };
+                console.log(t)
+                resolve(t);
+            }, 2000);
+        });
+    }
+    var a = addTag("City","1234")
+    console.log('a',a)
+    var hash = md5("2063c1608d6e0baf80249c42e2be5804");  // "2063c1608d6e0baf80249c42e2be5804"
+    console.log(hash)
+</script>
+</body>
+</html>
