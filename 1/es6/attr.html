@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+</head>
+<body>
+<script>
+    let [a,b] = [1,2];
+    let [head,...trail] = [1,234,567]
+    //console.log(trail)
+
+    function* hello(){
+        yield 'hello'
+        yield 'word'
+        return 'ending'
+    }
+    let hw = hello();
+    console.log(hw.next())
+    console.log(hw.next())
+    console.log(hw.next())
+
+    let  {foo,bar} = {foo:"foo",bar:"bar"}
+    console.log('foo',foo)
+
+    const set = new Set([1,2,3,4,5,5,5])
+    console.log([...set])
+    
+    const max = (arr) => Math.max(...arr);
+    max([1,23,4,5])
+    console.log(max([1,23,4,5]))
+    
+    let oldObj = {name:"123",content:{name:"123"}}
+    const obj = {...oldObj}
+    console.log(obj)
+
+    let getHack = ({id,content,name}) => {
+        console.log(id,name)
+    }
+    getHack({id:"123",name:"123"})
+</script>
+</body>
+</html>
